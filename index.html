@@ -39,14 +39,14 @@
     
 
     <!-- SECCIÓN HERO -->
-    <section class="relative bg-[#1a1a1a] text-white overflow-hidden">
+    <section class="relative bg-[#301803] text-white overflow-hidden">
         <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
             <div class="px-6 py-12 lg:py-24 sm:px-12 z-10 space-y-6">
               
-                <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-[#c89e6a]">
                     Muebles Industriales CDN
                 </h2>
-                <p class="text-neutral-300 text-base sm:text-lg max-w-xl font-light leading-relaxed">
+                <p class="text-[#c89e6a] text-base sm:text-lg max-w-xl font-light leading-relaxed ">
                     Piezas de carácter industrial para espacios que se viven todos los días. Explora nuestra selección artesanal y robusta.
                 </p>
                 <div>
@@ -95,15 +95,18 @@
     
 
     <!-- FOOTER -->
-    <footer id="contacto" class="bg-[#1a1a1a] text-neutral-400 py-10 border-t border-neutral-800">
+    <footer id="contacto" class="bg-[#1a1a1a] text-neutral-400 py-10 border-t border-neutral-800 bg-[#301803]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center space-x-2 text-white">
-                <i class="fa-solid fa-couch text-[#c89e6a]"></i>
-                <span class="font-bold tracking-wide">Muebles Industriales CDN</span>
+            <div class="flex items-center space-x-2 text-[#c89e6a]">
+            <img src="logo.svg" alt="Logo" class="h-32 w-32 fill-[#c89e6a]">        
+        </div>
+        <div class="flex items-center space-x-2 text-[#c89e6a] flex-col     ">
+                <p>Direccion: Calle 123, Ciudad</p>
+                <p>Correo: info@mueblescdn.com</p>   
             </div>
-            <p class="text-xs text-neutral-500 text-center">© 2026 Muebles Industriales CDN. Todos los derechos reservados.</p>
-            <div class="flex space-x-4 text-lg">
-                <a href="#" class="hover:text-[#c89e6a] transition"><i class="fa-brands fa-instagram"></i></a>
+            <p class="text-xs text-[#c89e6a] text-center">© 2026 Muebles Industriales CDN. Todos los derechos reservados.</p>
+            <div class="flex space-x-4 text-lg items-center" >
+                <a href="#" class="hover:text-[#c89e6a] transition"><i class="fa-brands fa-instagram "></i></a>
                 <a href="#" class="hover:text-[#c89e6a] transition"><i class="fa-brands fa-whatsapp"></i></a>
                 <a href="#" class="hover:text-[#c89e6a] transition"><i class="fa-regular fa-envelope"></i></a>
             </div>
@@ -131,7 +134,11 @@
                     <!-- Visor principal (Simulador 3D / Ángulo actual) -->
                     <div class="relative bg-neutral-900 rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center shadow-inner group">
                         <img id="modal-main-image" src="" alt="Vista de producto" class="w-full h-full object-cover transition duration-300" onerror="this.src='https://placehold.co/600x450/1a1a1a/c89e6a?text=Vista+3D+Preparada'">
-
+                        <model-viewer id="modal-main-model" class="hidden w-full h-full"
+                            camera-controls auto-rotate shadow-intensity="1" ar
+                            alt="Modelo 3D del producto"
+                            style="background-color:#262626;">
+                        </model-viewer>
                     
 
                         <!-- Controles de rotación simulada 3D -->
@@ -193,9 +200,17 @@
             </div>
         </div>
     </div>
+    
+            <!-- BOTÓN FLOTANTE DE WHATSAPP -->
+        <a id="whatsapp-float" href="#" target="_blank" rel="noopener"
+        aria-label="Escríbenos por WhatsApp"
+        class="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#1ebe5b] text-white flex items-center justify-center shadow-xl transition duration-300 hover:scale-110">
+            <i class="fa-brands fa-whatsapp text-3xl"></i>
+        </a>
 
     <!-- Lógica de la aplicación -->
      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html> 

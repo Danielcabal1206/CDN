@@ -4,7 +4,7 @@
 // =====================================================================
 const SUPABASE_URL = "https://xcnwpgvoxeazusayzcsy.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_ecVEFm7qBiBTZqpAGoe0Xw_sHqyCBkU";
-const WHATSAPP_NUMBER = "573145305676"; // Ej: "573001234567" (código de país + número, sin + ni espacios)
+const WHATSAPP_NUMBER = "573145305676"; // código de país + número, sin + ni espacios
 
 const PLACEHOLDER_IMG = "https://placehold.co/600x450/1a1a1a/c89e6a?text=Mueble+CDN";
 
@@ -38,6 +38,9 @@ function formatPrice(amount, currency) {
     return `${formatted} ${currency || "USD"}`;
 }
 
+// ¿La URL es un modelo 3D? (.glb, con o sin parámetros al final)
+const isModel = (url) => /\.glb(\?.*)?$/i.test(url);
+
 // Convierte una fila de la base de datos al formato que usa la interfaz
 function normalizeProduct(row) {
     const photos = Array.isArray(row.photos) && row.photos.length ? row.photos : [PLACEHOLDER_IMG];
@@ -52,8 +55,19 @@ function normalizeProduct(row) {
         material: row.material,
         style: row.style,
         warranty: row.warranty,
-        photos
+        photos,
+        // La tarjeta usa la primera imagen que NO sea un modelo 3D
+        cover: photos.find(p => !isModel(p)) || PLACEHOLDER_IMG
     };
+}
+
+// Muestra u oculta el botón flotante de WhatsApp
+function toggleWhatsappFloat(show) {
+    const btn = document.getElementById("whatsapp-float");
+    if (!btn) return;
+    btn.classList.toggle("opacity-0", !show);
+    btn.classList.toggle("pointer-events-none", !show);
+    btn.classList.toggle("scale-75", !show);
 }
 
 // =====================================================================
@@ -78,7 +92,7 @@ function renderCard(p) {
     return `
         <div class="bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-xl transition duration-300 flex flex-col justify-between group">
             <div class="relative overflow-hidden aspect-[4/3] bg-neutral-100">
-                <img src="${escapeHtml(p.photos[0])}" alt="${escapeHtml(p.title)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='${PLACEHOLDER_IMG}'">
+                <img src="${escapeHtml(p.cover)}" alt="${escapeHtml(p.title)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='${PLACEHOLDER_IMG}'">
                 <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-neutral-900 text-xs px-2.5 py-1 rounded-md font-bold uppercase tracking-wider shadow-sm">
                     ${escapeHtml(p.category)}
                 </div>
@@ -162,11 +176,18 @@ function openProductModal(id) {
 
     document.getElementById("product-modal").classList.remove("hidden");
     document.body.style.overflow = "hidden";
+    toggleWhatsappFloat(false);
 }
 
 function closeModal() {
     document.getElementById("product-modal").classList.add("hidden");
     document.body.style.overflow = "auto";
+
+    // Detener el visor 3D al cerrar
+    const viewer = document.getElementById("modal-main-model");
+    if (viewer) viewer.removeAttribute("src");
+
+    toggleWhatsappFloat(true);
 }
 
 function updateModalContent() {
@@ -210,7 +231,9 @@ function updateModalContent() {
 function renderThumbnails() {
     document.getElementById("modal-thumbnails").innerHTML = activeProduct.photos.map((photo, index) => `
         <button data-angle="${index}" class="relative rounded-lg overflow-hidden aspect-video border-2 transition">
-            <img src="${escapeHtml(photo)}" alt="Ángulo ${index + 1}" class="w-full h-full object-cover" onerror="this.src='${PLACEHOLDER_IMG}'">
+            ${isModel(photo)
+                ? `<div class="w-full h-full bg-neutral-800 flex items-center justify-center text-[#c89e6a]"><i class="fa-solid fa-cube text-xl"></i></div>`
+                : `<img src="${escapeHtml(photo)}" alt="Ángulo ${index + 1}" class="w-full h-full object-cover" onerror="this.src='${PLACEHOLDER_IMG}'">`}
         </button>
     `).join("");
 }
@@ -219,8 +242,21 @@ function setAngle(index) {
     if (!activeProduct) return;
     activePhotoIndex = index;
 
-    const mainImage = document.getElementById("modal-main-image");
-    mainImage.src = activeProduct.photos[index];
+    const url = activeProduct.photos[index];
+    const img = document.getElementById("modal-main-image");
+    const viewer = document.getElementById("modal-main-model");
+
+    if (isModel(url)) {
+        img.classList.add("hidden");
+        viewer.src = url;
+        viewer.classList.remove("hidden");
+    } else {
+        viewer.classList.add("hidden");
+        viewer.removeAttribute("src");
+        img.src = url;
+        img.classList.remove("hidden");
+    }
+
     document.getElementById("angle-indicator").textContent = `Ángulo ${index + 1} / ${activeProduct.photos.length}`;
 
     document.querySelectorAll("#modal-thumbnails button").forEach((btn, idx) => {
@@ -271,7 +307,7 @@ function setupEventListeners() {
     document.getElementById("prev-angle").addEventListener("click", () => stepAngle(-1));
     document.getElementById("next-angle").addEventListener("click", () => stepAngle(1));
 
-        // Menú móvil (opcional)
+    // Menú móvil (opcional)
     const mobileMenu = document.getElementById("mobile-menu");
     const mobileMenuBtn = document.getElementById("mobile-menu-btn");
     if (mobileMenu && mobileMenuBtn) {
@@ -281,11 +317,17 @@ function setupEventListeners() {
         });
     }
 }
-    
+
 // =====================================================================
 // INICIO
 // =====================================================================
 async function init() {
+    // Enlace del botón flotante de WhatsApp
+    const waFloat = document.getElementById("whatsapp-float");
+    if (waFloat) {
+        waFloat.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hola, quiero información sobre sus muebles industriales.")}`;
+    }
+
     renderLoading();
     try {
         products = await loadProducts();
